@@ -112,9 +112,9 @@ public class DisplayFeaturesCabcTileService extends TileService {
         updateCurrentCabcmode();
 
         if (currentCabcMode == CabcModes.length - 1) {
-	currentCabcMode = 0;
+            currentCabcMode = 0;
         } else {
-	currentCabcMode++;
+            currentCabcMode++;
         }
 
         FileUtils.writeLine(mConfig.getCabcPath(), CabcValues[currentCabcMode]);
@@ -126,10 +126,9 @@ public class DisplayFeaturesCabcTileService extends TileService {
         sharedPrefs.edit().putString(mConfig.DISPLAYFEATURES_CABC_KEY, CabcValues[currentCabcMode]).commit();
 
         Intent intent = new Intent(mConfig.ACTION_CABC_SERVICE_CHANGED);
-
         intent.putExtra(mConfig.EXTRA_CABC_STATE, enabled);
         intent.setFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY);
-        this.sendBroadcastAsUser(intent, UserHandle.CURRENT);;
+        this.sendBroadcastAsUser(intent, UserHandle.CURRENT);
 
         updateCabcTile();
 

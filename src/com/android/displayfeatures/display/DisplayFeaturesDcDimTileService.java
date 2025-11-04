@@ -101,10 +101,9 @@ public class DisplayFeaturesDcDimTileService extends TileService {
         sharedPrefs.edit().putBoolean(mConfig.DISPLAYFEATURES_DC_DIMMING_KEY, enabled).commit();
 
         Intent intent = new Intent(mConfig.ACTION_DC_DIM_SERVICE_CHANGED);
-
         intent.putExtra(mConfig.EXTRA_DC_DIM_STATE, enabled);
         intent.setFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY);
-        this.sendBroadcastAsUser(intent, UserHandle.CURRENT);;
+        this.sendBroadcastAsUser(intent, UserHandle.CURRENT);
 
         updateUI();
     }

@@ -52,7 +52,7 @@ public class DisplayFeaturesHbmService extends Service {
 
                 mChangedIntent.putExtra(mConfig.EXTRA_HBM_STATE, enabled);
                 mChangedIntent.setFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY);
-                context.sendBroadcastAsUser(mChangedIntent, UserHandle.CURRENT);;
+                context.sendBroadcastAsUser(mChangedIntent, UserHandle.CURRENT);
                 stopSelf();
             }
         }

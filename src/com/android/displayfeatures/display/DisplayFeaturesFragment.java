@@ -155,9 +155,15 @@ public class DisplayFeaturesFragment extends PreferenceFragmentCompat implements
     @Override
     public void onResume() {
         super.onResume();
-        if (FileUtils.fileExists(mConfig.getDcDimPath())) mDcDimmingPreference.setChecked(mConfig.isCurrentlyEnabled(mConfig.getDcDimPath()));
-        if (FileUtils.fileExists(mConfig.getHbmPath())) mHBMPreference.setChecked(mConfig.isCurrentlyEnabled(mConfig.getHbmPath()));
-        if (FileUtils.fileExists(mConfig.getFpsPath())) mFpsPreference.setChecked(isFpsOverlayRunning());
+        if (FileUtils.fileExists(mConfig.getDcDimPath())) {
+            mDcDimmingPreference.setChecked(mConfig.isCurrentlyEnabled(mConfig.getDcDimPath()));
+        }
+        if (FileUtils.fileExists(mConfig.getHbmPath())) {
+            mHBMPreference.setChecked(mConfig.isCurrentlyEnabled(mConfig.getHbmPath()));
+        }
+        if (FileUtils.fileExists(mConfig.getFpsPath())) {
+            mFpsPreference.setChecked(isFpsOverlayRunning());
+        }
         if (FileUtils.fileExists(mConfig.getCabcPath())) {
             mCABCPreference.setValue(mConfig.isCabcCurrentlyEnabled(mConfig.getCabcPath()));
             mCABCPreference.setSummary(mCABCPreference.getEntry());
@@ -168,76 +174,60 @@ public class DisplayFeaturesFragment extends PreferenceFragmentCompat implements
     @Override
     public boolean onPreferenceChange(Preference preference, Object newValue) {
         if (mConfig.DISPLAYFEATURES_DC_DIMMING_KEY.equals(preference.getKey())) {
-            mInternalHbmStart = true;
-            Context mContext = getContext();
-
-            SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(mContext);
+            mInternalDcDimStart = true;
 
             FileUtils.writeLine(mConfig.getDcDimPath(), (Boolean) newValue ? "1":"0");
 
-            boolean enabled = mConfig.isCurrentlyEnabled(mConfig.getDcDimPath());
-
-            sharedPrefs.edit().putBoolean(mConfig.DISPLAYFEATURES_DC_DIMMING_KEY, enabled).commit();
+            SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getContext());
+            sharedPrefs.edit().putBoolean(mConfig.DISPLAYFEATURES_DC_DIMMING_KEY, (Boolean) newValue).commit();
 
             Intent intent = new Intent(mConfig.ACTION_DC_DIM_SERVICE_CHANGED);
-
-            intent.putExtra(mConfig.EXTRA_DC_DIM_STATE, enabled);
+            intent.putExtra(mConfig.EXTRA_DC_DIM_STATE, (Boolean) newValue);
             intent.setFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY);
-            mContext.sendBroadcastAsUser(intent, UserHandle.CURRENT);;
+            getContext().sendBroadcastAsUser(intent, UserHandle.CURRENT);
         }
         if (mConfig.DISPLAYFEATURES_HBM_KEY.equals(preference.getKey())) {
             mInternalHbmStart = true;
-            Context mContext = getContext();
 
             FileUtils.writeLine(mConfig.getHbmPath(), (Boolean) newValue ? "1" : "0");
 
-            boolean enabled = mConfig.isCurrentlyEnabled(mConfig.getHbmPath());
-
-            Intent hbmIntent = new Intent(mContext,
+            Intent hbmIntent = new Intent(getContext(),
                     com.android.displayfeatures.display.DisplayFeaturesHbmService.class);
-
-            if (enabled) mContext.startService(hbmIntent);
-            else mContext.stopService(hbmIntent);
+            if ((Boolean) newValue) getContext().startService(hbmIntent);
+            else getContext().stopService(hbmIntent);
 
             Intent intent = new Intent(mConfig.ACTION_HBM_SERVICE_CHANGED);
-
-            intent.putExtra(mConfig.EXTRA_HBM_STATE, enabled);
+            intent.putExtra(mConfig.EXTRA_HBM_STATE, (Boolean) newValue);
             intent.setFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY);
-            mContext.sendBroadcastAsUser(intent, UserHandle.CURRENT);;
+            getContext().sendBroadcastAsUser(intent, UserHandle.CURRENT);
         }
         if (mConfig.DISPLAYFEATURES_FPS_KEY.equals(preference.getKey())) {
             mInternalFpsStart = true;
-            Context mContext = getContext();
+            final boolean enabled = (Boolean) newValue;
 
-            boolean enabled = (Boolean) newValue;
-
-            Intent fpsinfo = new Intent(mContext,
+            Intent fpsinfo = new Intent(getContext(),
                     com.android.displayfeatures.display.DisplayFeaturesFpsService.class);
-
-            if (enabled) mContext.startService(fpsinfo);
-            else mContext.stopService(fpsinfo);
+            if (enabled) getContext().startService(fpsinfo);
+            else getContext().stopService(fpsinfo);
         }
         if (mConfig.DISPLAYFEATURES_CABC_KEY.equals(preference.getKey())) {
             mInternalCabcStart = true;
-            Context mContext = getContext();
 
-            mCABCPreference.setValue((String) newValue);
+            String value = (String) newValue;
+            FileUtils.writeLine(mConfig.getCabcPath(), value);
+
+            mCABCPreference.setValue(value);
             mCABCPreference.setSummary(mCABCPreference.getEntry());
 
-            FileUtils.writeLine(mConfig.getCabcPath(), (String) newValue);
+            SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getContext());
+            sharedPrefs.edit().putString(mConfig.DISPLAYFEATURES_CABC_KEY, value).commit();
 
-            SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(mContext);
-            sharedPrefs.edit().putString(mConfig.DISPLAYFEATURES_CABC_KEY, (String) newValue).commit();
-
-            String value = mConfig.isCabcCurrentlyEnabled(mConfig.getCabcPath());
-
-            Boolean enabled = (!value.equals("0"));
+            boolean enabled = !"0".equals(value);
 
             Intent intent = new Intent(mConfig.ACTION_CABC_SERVICE_CHANGED);
-
             intent.putExtra(mConfig.EXTRA_CABC_STATE, enabled);
             intent.setFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY);
-            mContext.sendBroadcastAsUser(intent, UserHandle.CURRENT);;
+            getContext().sendBroadcastAsUser(intent, UserHandle.CURRENT);
         }
         return true;
     }
@@ -250,8 +240,7 @@ public class DisplayFeaturesFragment extends PreferenceFragmentCompat implements
     }
 
     private boolean isFpsOverlayRunning() {
-        Context context = getContext();
-        final SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context);
+        final SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getContext());
         return sharedPrefs.getBoolean(mConfig.PREF_KEY_FPS_STATE, false);
     }
 }

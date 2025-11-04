@@ -101,10 +101,9 @@ public class DisplayFeaturesHbmTileService extends TileService {
         else this.stopService(hbmIntent);
 
         Intent intent = new Intent(mConfig.ACTION_HBM_SERVICE_CHANGED);
-
         intent.putExtra(mConfig.EXTRA_HBM_STATE, enabled);
         intent.setFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY);
-        this.sendBroadcastAsUser(intent, UserHandle.CURRENT);;
+        this.sendBroadcastAsUser(intent, UserHandle.CURRENT);
 
         updateUI();
     }
